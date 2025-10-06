@@ -13,7 +13,7 @@ namespace ray::core
 
     }
 
-    std::optional<ray::core::RayHit> Sphere::Intersect(const ray::core::Ray &ray) const
+    std::optional<ray::core::RayHit> Sphere::Intersect(const ray::core::Ray &ray, float tMin, float tMax) const
     {
         glm::vec3 oc = m_center - ray.m_origin;
         float a = glm::dot(ray.m_direction, ray.m_direction);
@@ -24,18 +24,21 @@ namespace ray::core
         if(delta >= 0)
         {
             float dist = (-b - std::sqrtf(delta)) / (2 * a);
+            if(dist < tMin || dist > tMax)
+                return {};
             glm::vec3 intersect = ray.m_origin + dist * ray.m_direction;
+            bool isFrontFace = glm::dot(-oc, ray.m_direction) > 0.f;
             return RayHit
             {
                 .m_distance = dist,
                 .m_point = ray.m_origin + dist * ray.m_direction,
-                .m_normal = glm::normalize(intersect - m_center),
-                .m_IsFrontFace = glm::dot(-oc, ray.m_direction) > 0.f
+                .m_normal = isFrontFace ? glm::normalize(intersect - m_center) : -glm::normalize(intersect - m_center),
+                .m_IsFrontFace = isFrontFace
             };
         }
         else
         {
-            return {std::nullopt};
+            return {};
         }
     }
 } // ray::core

@@ -18,6 +18,6 @@ namespace ray::core
 
     public:
         Sphere(const glm::vec3& center, float radius);
-        [[nodiscard]] std::optional<RayHit> Intersect(const Ray& ray) const;
+        [[nodiscard]] std::optional<RayHit> Intersect(const Ray& ray, float tMin, float tMax) const;
     };
 } // ray::core
