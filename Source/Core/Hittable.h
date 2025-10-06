@@ -10,8 +10,8 @@
 namespace ray::core
 {
     template<typename T>
-    concept Hittable = requires(const T& type , const Ray& ray)
+    concept Hittable = requires(const T& type , const Ray& ray, float tMin, float tMax)
     {
-        { type.Intersect(ray) } -> std::convertible_to<std::optional<RayHit>>;
+        { type.Intersect(ray, tMin, tMax) } -> std::convertible_to<std::optional<RayHit>>;
     };
 }
