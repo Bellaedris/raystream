@@ -3,6 +3,10 @@ A small CPU raytracer written during livestreams on twitch at https://www.twitch
 
 # Results this far
 
+## Stream 2
+Added a plane primitive, a scene representation and basic point lights.
+![stream2.png](Media/stream2.png)
+
 ## Stream 1
 Mostly setup and configuration work. Includes glm lib and gtest for automated tests.
 Very basic ray tracing setup: we send rays through a camera that has a fixed resolution and a viewport in the world. 
