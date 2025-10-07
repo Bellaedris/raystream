@@ -7,14 +7,14 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <string>
+#include "ColorUtils.h"
 
 namespace ray::core
 {
     class Image
     {
-        using Color = glm::vec<3, unsigned char>;
     private:
-        std::vector<Color> m_pixels;
+        std::vector<ColorRGB> m_pixels;
         int m_height, m_width;
 
     public:
@@ -32,9 +32,9 @@ namespace ray::core
          * \param x row
          * \param y column
          */
-        void SetPixel(int x, int y, Color color);
+        void SetPixel(int x, int y, ColorRGB color);
 
-        Color GetPixel(int x, int y) const;
+        [[nodiscard]] ColorRGB GetPixel(int x, int y) const;
 
         int Index(int x, int y) const;
     };

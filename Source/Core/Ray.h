@@ -5,6 +5,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include "Material.h"
 
 namespace ray::core
 {
@@ -27,6 +28,7 @@ namespace ray::core
         glm::vec3 m_point;
         glm::vec3 m_normal;
         bool m_IsFrontFace;
+        Material m_material;
     };
 
 } // ray::core

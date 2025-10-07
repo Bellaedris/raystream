@@ -5,7 +5,7 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include "../../Source/Core/Sphere.h"
+#include "../../Source/Shapes/Sphere.h"
 #include "../../Source/Core/Ray.h"
 
 // read this https://google.github.io/googletest/primer.html

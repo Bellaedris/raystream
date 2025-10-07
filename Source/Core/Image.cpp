@@ -20,12 +20,12 @@ namespace ray::core
         return stbi_write_png(name.c_str(), m_width, m_height, 3, m_pixels.data(), 3 * m_width) != 0;
     }
 
-    void Image::SetPixel(int x, int y, Color color)
+    void Image::SetPixel(int x, int y, ColorRGB color)
     {
         m_pixels[Index(x, y)] = color;
     }
 
-    Image::Color Image::GetPixel(int x, int y) const
+    ColorRGB Image::GetPixel(int x, int y) const
     {
         return m_pixels.at(Index(x, y));
     }

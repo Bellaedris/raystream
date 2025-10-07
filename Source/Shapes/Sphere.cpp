@@ -4,11 +4,12 @@
 
 #include "Sphere.h"
 
-namespace ray::core
+namespace ray::shape
 {
-    Sphere::Sphere(const glm::vec3 &center, float radius)
+    Sphere::Sphere(const glm::vec3 &center, float radius, const core::Material& mat)
         : m_center(center)
         , m_radius(radius)
+        , m_mat(mat)
     {
 
     }
@@ -27,13 +28,15 @@ namespace ray::core
             if(dist < tMin || dist > tMax)
                 return {};
             glm::vec3 intersect = ray.m_origin + dist * ray.m_direction;
-            bool isFrontFace = glm::dot(-oc, ray.m_direction) > 0.f;
-            return RayHit
+            glm::vec3 normal = (intersect - m_center) / m_radius;
+            bool isFrontFace = glm::dot(normal, ray.m_direction) < 0.f;
+            return core::RayHit
             {
                 .m_distance = dist,
                 .m_point = ray.m_origin + dist * ray.m_direction,
-                .m_normal = isFrontFace ? glm::normalize(intersect - m_center) : -glm::normalize(intersect - m_center),
-                .m_IsFrontFace = isFrontFace
+                .m_normal = isFrontFace ? normal : -normal,
+                .m_IsFrontFace = isFrontFace,
+                .m_material = m_mat
             };
         }
         else
@@ -41,4 +44,4 @@ namespace ray::core
             return {};
         }
     }
-} // ray::core
+} // ray::shape
