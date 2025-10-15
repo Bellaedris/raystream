@@ -24,9 +24,14 @@ namespace ray::shape
         float delta = b * b - 4 * a * c;
         if(delta >= 0)
         {
-            float dist = (-b - std::sqrtf(delta)) / (2 * a);
+            float dist = (-b - std::sqrtf(delta)) / (2.f * a);
             if(dist < tMin || dist > tMax)
-                return {};
+            {
+                //handle backface hit
+                dist = (-b + std::sqrtf(delta)) / (2.f * a);
+                if (dist < tMin || dist > tMax)
+                    return {};
+            }
             glm::vec3 intersect = ray.m_origin + dist * ray.m_direction;
             glm::vec3 normal = (intersect - m_center) / m_radius;
             bool isFrontFace = glm::dot(normal, ray.m_direction) < 0.f;

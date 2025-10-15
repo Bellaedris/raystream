@@ -15,10 +15,12 @@ namespace ray::test::core
     class TestSphere : public testing::Test
     {
     protected:
-        ray::core::Sphere m_testSphere;
+        shape::Sphere m_testSphere;
+        ray::core::Material m_sphereMat;
 
         TestSphere()
-                : m_testSphere({.0f, .0f, .0f}, 1.f)
+                : m_testSphere({.0f, .0f, .0f}, 1.f, m_sphereMat)
+                , m_sphereMat({1.f, .0f, .0f})
         {
         }
 
