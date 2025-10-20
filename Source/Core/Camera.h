@@ -22,6 +22,9 @@ namespace ray::core
         float m_aspectRatio;
         float m_focalLength;
 
+        int m_raysMaxDepth{1};
+        int m_spp{1};
+
         /**
          * \brief Just a hack to try and avoid inheritance pointer table by using templates
          * \tparam Primitive An type that defines an Intersect(const Ray& ray)
@@ -44,7 +47,7 @@ namespace ray::core
          * \param position position of the camera in world space
          * \param focalLength distance of the focal plane in the positive z axis
          */
-        Camera(int width, int height, float viewportHeight, glm::vec3 position, float focalLength);
+        Camera(int width, int height, float viewportHeight, glm::vec3 position, float focalLength, int raysMaxDepth, int spp);
 
         /**
          * \brief Iterates over all pixels in the scene and sends rays to color the image
@@ -61,6 +64,6 @@ namespace ray::core
          * \param ray a ray
          * \return the color of the emitted ray
          */
-        ColorRGB RayColor(const Scene &scene, const Ray &ray);
+        Color RayColor(const Scene &scene, const Ray &ray, int currentDepth);
     };
 }
