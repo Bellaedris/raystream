@@ -16,12 +16,12 @@ namespace ray::shape
     private:
         glm::vec3 m_center;
         float m_radius;
-        core::Material m_mat;
+        std::shared_ptr<core::Material> m_mat;
 
     public:
-        Sphere(const glm::vec3& center, float radius, const core::Material& mat);
+        Sphere(const glm::vec3& center, float radius, const std::shared_ptr<core::Material>& mat);
         [[nodiscard]] std::optional<core::RayHit> Intersect(const core::Ray& ray, float tMin, float tMax) const;
 
-        inline core::Material GetMaterial() const { return m_mat; };
+        inline std::shared_ptr<core::Material> GetMaterial() const { return m_mat; };
     };
 } // ray::shape

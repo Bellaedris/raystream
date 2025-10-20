@@ -6,7 +6,7 @@
 
 namespace ray::shape
 {
-    Sphere::Sphere(const glm::vec3 &center, float radius, const core::Material& mat)
+    Sphere::Sphere(const glm::vec3 &center, float radius, const std::shared_ptr<core::Material>& mat)
         : m_center(center)
         , m_radius(radius)
         , m_mat(mat)

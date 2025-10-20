@@ -16,13 +16,13 @@ namespace ray::shape
     private:
         glm::vec3 m_origin;
         glm::vec3 m_normal;
-        core::Material m_mat;
+        std::shared_ptr<core::Material> m_mat;
 
     public:
-        Plane(const glm::vec3& origin, const glm::vec3& normal, const core::Material& mat);
+        Plane(const glm::vec3& origin, const glm::vec3& normal, const std::shared_ptr<core::Material>& mat);
 
         std::optional<core::RayHit> Intersect(const core::Ray& ray, float tMin, float tMax) const;
 
-        inline core::Material GetMaterial() const { return m_mat; };
+        inline std::shared_ptr<core::Material> GetMaterial() const { return m_mat; };
     };
 }

@@ -5,10 +5,11 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include "Material.h"
+#include <memory>
 
 namespace ray::core
 {
+    struct Material;
     struct Ray
     {
         glm::vec3 m_origin;
@@ -28,7 +29,7 @@ namespace ray::core
         glm::vec3 m_point;
         glm::vec3 m_normal;
         bool m_IsFrontFace;
-        Material m_material;
+        std::shared_ptr<Material> m_material;
     };
 
 } // ray::core

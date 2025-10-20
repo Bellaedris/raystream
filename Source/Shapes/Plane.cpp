@@ -6,7 +6,7 @@
 
 namespace ray::shape
 {
-    ray::shape::Plane::Plane(const glm::vec3 &origin, const glm::vec3 &normal, const core::Material& mat)
+    ray::shape::Plane::Plane(const glm::vec3 &origin, const glm::vec3 &normal, const std::shared_ptr<core::Material>& mat)
         : m_origin(origin)
         , m_normal(normal)
         , m_mat(mat)
