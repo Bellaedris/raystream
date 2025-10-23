@@ -53,7 +53,29 @@ namespace ray::core
     std::optional<RayAttenuation> Material::ScatterDielectric(const Ray& in, const RayHit& hit)
     {
         // diffract with all the complicated things and all
-        return std::optional<RayAttenuation>();
+
+        // schlick fresnel
+        float cosTheta = glm::dot(-in.m_direction, hit.m_normal);
+        float sinTheta = std::sqrtf(1.f - cosTheta * cosTheta);
+        float reflectance = SchlickFresnel(std::max(.0f, cosTheta));
+
+        float refractionCoefficient = hit.m_IsFrontFace ? (1.f / m_refractiveIndex) : m_refractiveIndex;
+
+        // if we look back at snell descartes formula, it is possible that we find no solution for our equation (if sintheta1 is greater than 1)
+        // in that case, we reflect instead of refracting
+        if(RNG::Float() < reflectance || refractionCoefficient * sinTheta > 1.f)
+        {
+            // reflect
+            return RayAttenuation({hit.m_point, glm::reflect(in.m_direction, hit.m_normal)}, m_albedo);
+        }
+        else
+        {
+            // refract
+            glm::vec3 rparallel = refractionCoefficient * (in.m_direction + cosTheta * hit.m_normal);
+            float sin2theta2 = refractionCoefficient * refractionCoefficient * (1.f - cosTheta * cosTheta);
+            glm::vec3 rortho = -std::sqrtf(1.f - sin2theta2) * hit.m_normal;
+            return RayAttenuation({hit.m_point, rortho + rparallel}, m_albedo);
+        }
     }
 
     std::optional<RayAttenuation> Material::ScatterEmissive(const Ray& in, const RayHit& hit)
@@ -92,5 +114,24 @@ namespace ray::core
             .m_type = MATERIAL_EMISSIVE
         };
         return emissiveMat;
+    }
+
+    Material Material::CreateDielectric(const Color& albedo, float refractiveIndex)
+    {
+        Material dielectric
+        {
+            .m_albedo = albedo,
+            .m_refractiveIndex = refractiveIndex,
+            .m_type = MATERIAL_DIELECTRIC
+        };
+        return dielectric;
+    }
+
+    float Material::SchlickFresnel(float cosTheta)
+    {
+        float r0 = (1.f - m_refractiveIndex) / (1.f + m_refractiveIndex);
+        r0 = r0 * r0;
+
+        return r0 + (1.f - r0) * (1.f - cosTheta);
     }
 }

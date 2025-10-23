@@ -7,20 +7,24 @@ int main()
     auto red = std::make_shared<ray::core::Material>(ray::core::Material::CreateDiffuse(glm::vec3(1.f, .0, .0f)));
     auto green = std::make_shared<ray::core::Material>(ray::core::Material::CreateDiffuse(glm::vec3(.0, 1.f, .0f)));
     auto white = std::make_shared<ray::core::Material>(ray::core::Material::CreateDiffuse(glm::vec3(1.f, 1.f, 1.f)));
+    auto pink = std::make_shared<ray::core::Material>(ray::core::Material::CreateDiffuse(glm::vec3(.961f, .663f, .722f)));
+    auto lightBlue = std::make_shared<ray::core::Material>(ray::core::Material::CreateDiffuse(glm::vec3(.357f, .808f, .98f)));
 
     auto metal = std::make_shared<ray::core::Material>(ray::core::Material::CreateMetallic(glm::vec3(1.f, 1.f, 1.f), .5f));
+
+    auto glass = std::make_shared<ray::core::Material>(ray::core::Material::CreateDielectric({1, 1, 1}, 1.5f));
 
     auto lamp = std::make_shared<ray::core::Material>(ray::core::Material::CreateEmissive({1.f, 1.f, 1.f}));
 
     ray::core::Scene scene;
     scene.AddSphere({glm::vec3(5.f, -7.f, 6.f), 3.f, metal});
-    scene.AddSphere({glm::vec3(-4.f, -6.f, 10.f), 4.f, green});
+    scene.AddSphere({glm::vec3(-4.f, -6.f, 10.f), 4.f, glass});
     scene.AddSphere({glm::vec3(0.f, 5.f, 0.f), 3.f, lamp});
 
     // cornell box
     scene.AddPlane({{.0f, .0f, 10.f}, {.0, .0f, -1.f}, white}); // back wall
-    scene.AddPlane({{-10.f, .0f, .0f}, {1.f, .0f, .0f}, red}); // left wall
-    scene.AddPlane({{10.f, .0f, .0f}, {-1.f, .0f, .0f}, green}); // right wall
+    scene.AddPlane({{-10.f, .0f, .0f}, {1.f, .0f, .0f}, pink}); // left wall
+    scene.AddPlane({{10.f, .0f, .0f}, {-1.f, .0f, .0f}, lightBlue}); // right wall
     scene.AddPlane({{.0f, 10.f, .0f}, {.0, -1.f, .0f}, white}); // ceiling
     scene.AddPlane({{.0f, -10.f, .0f}, {.0, 1.f, .0f}, white}); // floor
 

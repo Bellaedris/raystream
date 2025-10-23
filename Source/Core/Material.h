@@ -21,8 +21,9 @@ namespace ray::core
         RayAttenuation(const Ray& ray, const Color& attenuation) : m_ray(ray), m_attenuation(attenuation) {}
     };
 
-    struct Material
+    class Material
     {
+    public:
         #pragma region InnerStruct
         enum MaterialType
         {
@@ -39,20 +40,31 @@ namespace ray::core
         Color m_emission {};
         // metallic
         float m_fuzz {};
+        // dielectric
+        float m_refractiveIndex {0.f};
+        MaterialType m_type;
         #pragma endregion MaterialParameters
 
-        MaterialType m_type;
-
+    private:
         std::optional<RayAttenuation> ScatterDiffuse(const Ray& in, const RayHit& hit);
         std::optional<RayAttenuation> ScatterMetal(const Ray& in, const RayHit& hit);
         std::optional<RayAttenuation> ScatterDielectric(const Ray& in, const RayHit& hit);
         std::optional<RayAttenuation> ScatterEmissive(const Ray& in, const RayHit& hit);
 
+        /**
+         * \brief Schlick's approximation of the fresnel term, that represents how much light will be refracted or diffracted for a dielectric material
+         * \param indiceOfRefraction indice of refraction of the medium. If going from the medium to air, use 1/indiceOfRefraction as parameter
+         * \param cosTheta Half of the normal, reflect direction. In fact, it's just the angle between the incoming ray and the normal
+         * \return The fresnel term
+         */
+        [[nodiscard]] float SchlickFresnel(float cosTheta);
+    public:
         std::optional<RayAttenuation> Scatter(const Ray& in, const RayHit& hit);
 
         #pragma region ConstructionStatics
         static Material CreateDiffuse(const Color& albedo);
         static Material CreateMetallic(const Color& albedo, float fuzz);
+        static Material CreateDielectric(const Color& albedo, float refractiveIndex);
         static Material CreateEmissive(const Color& emissive);
         #pragma endregion ConstructionStatics
     };
