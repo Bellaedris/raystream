@@ -56,7 +56,7 @@ namespace ray::core
 
         // schlick fresnel
         float cosTheta = glm::dot(-in.m_direction, hit.m_normal);
-        float sinTheta = std::sqrtf(1.f - cosTheta * cosTheta);
+        float sinTheta = std::sqrt(1.f - cosTheta * cosTheta);
         float reflectance = SchlickFresnel(std::max(.0f, cosTheta));
 
         float refractionCoefficient = hit.m_IsFrontFace ? (1.f / m_refractiveIndex) : m_refractiveIndex;
@@ -73,7 +73,7 @@ namespace ray::core
             // refract
             glm::vec3 rparallel = refractionCoefficient * (in.m_direction + cosTheta * hit.m_normal);
             float sin2theta2 = refractionCoefficient * refractionCoefficient * (1.f - cosTheta * cosTheta);
-            glm::vec3 rortho = -std::sqrtf(1.f - sin2theta2) * hit.m_normal;
+            glm::vec3 rortho = -std::sqrt(1.f - sin2theta2) * hit.m_normal;
             return RayAttenuation({hit.m_point, rortho + rparallel}, m_albedo);
         }
     }

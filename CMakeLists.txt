@@ -5,7 +5,6 @@ project(RaytracingStream)
 
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(Stb REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 find_package(OpenMP)
@@ -43,5 +42,5 @@ gtest_discover_tests(RayTest)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 add_executable(RaytracingStream ${SOURCE_FILES})
-target_include_directories(RaytracingStream PRIVATE ${Stb_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/Include)
 target_link_libraries(RaytracingStream PRIVATE glm::glm)

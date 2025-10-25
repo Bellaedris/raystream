@@ -24,11 +24,11 @@ namespace ray::shape
         float delta = b * b - 4 * a * c;
         if(delta >= 0)
         {
-            float dist = (-b - std::sqrtf(delta)) / (2.f * a);
+            float dist = (-b - std::sqrt(delta)) / (2.f * a);
             if(dist < tMin || dist > tMax)
             {
                 //handle backface hit
-                dist = (-b + std::sqrtf(delta)) / (2.f * a);
+                dist = (-b + std::sqrt(delta)) / (2.f * a);
                 if (dist < tMin || dist > tMax)
                     return {};
             }

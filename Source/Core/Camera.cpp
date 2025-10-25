@@ -27,8 +27,7 @@ namespace ray::core
         if(currentDepth < 1)
             return {0, 0, 0};
 
-        std::optional<RayHit> hit;
-        hit = scene.Intersect(ray, 0.001f, std::numeric_limits<float>::max());
+        std::optional<RayHit> hit = scene.Intersect(ray, 0.001f, std::numeric_limits<float>::max());
         if (hit.has_value())
         {
             std::optional<RayAttenuation> scatter = hit->m_material->Scatter(ray, hit.value());
@@ -56,7 +55,7 @@ namespace ray::core
         {
             ScopedTimer<std::chrono::milliseconds> timer("Tracing");
             int finished = 0;
-            #pragma omp parallel for collapse(2)
+            #pragma omp parallel for
             for (int y = 0; y < m_height; y++)
             {
                 std::cout << "Lines finished: " << finished << " / " << m_height << "\n";

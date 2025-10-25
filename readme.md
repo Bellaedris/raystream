@@ -1,7 +1,19 @@
 # Streamray
-A small CPU raytracer written during livestreams on twitch at https://www.twitch.tv/bellaedris
+A small CPU raytracer written(mostly) during livestreams on twitch at https://www.twitch.tv/bellaedris
 
+# Build
+## Windows 
+Install vcpkg and GLM, GTest. If using clion or similar non-visual studio build systems, add this argument to the cmake build:
+`-DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake`
+
+## Linux
+Install all required packages via `apt` or any package manager: 
+ `libglm-dev`, `libgtest-dev`
 # Results this far
+
+## Stream 3
+Refactored the material system, added scattering of rays logic, emissive and metallic/glass materials
+![stream3.png](Media/stream3.png)
 
 ## Stream 2
 Added a plane primitive, a scene representation and basic point lights.
