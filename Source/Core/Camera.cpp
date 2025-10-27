@@ -6,10 +6,11 @@
 #include "Ray.h"
 #include "RandomUtils.h"
 #include "Timer.h"
+#include "../MonteCarlo/CosineWeighted.h"
 
 namespace ray::core
 {
-    Camera::Camera(int width, int height, float viewportHeight, glm::vec3 position, float focalLength, int raysMaxDepth, int spp)
+    Camera::Camera(int width, int height, float viewportHeight, glm::vec3 position, float focalLength, int raysMaxDepth, int spp, int bouncesPerHit)
         : m_width(width)
         , m_height(height)
         , m_viewportHeight(viewportHeight)
@@ -17,6 +18,7 @@ namespace ray::core
         , m_focalLength(focalLength)
         , m_raysMaxDepth(std::max(1, raysMaxDepth))
         , m_spp(std::max(1, spp))
+        , m_bouncesPerHit(bouncesPerHit)
     {
         m_aspectRatio = m_width / static_cast<float>(m_height);
         m_viewportWidth = m_viewportHeight * m_aspectRatio;
@@ -30,11 +32,19 @@ namespace ray::core
         std::optional<RayHit> hit = scene.Intersect(ray, 0.001f, std::numeric_limits<float>::max());
         if (hit.has_value())
         {
-            std::optional<RayAttenuation> scatter = hit->m_material->Scatter(ray, hit.value());
-            if(scatter.has_value())
-                return hit->m_material->m_emission + scatter->m_attenuation * RayColor(scene, scatter.value().m_ray, currentDepth - 1);
-            else
-                return hit->m_material->m_emission;
+            // bounce rays through the scene
+            Color res {0, 0, 0};
+            for (int i = 0; i < m_bouncesPerHit; ++i)
+            {
+                mc::CosineWeighted distribution(hit->m_normal);
+                std::optional<RayAttenuation> scatter = hit->m_material->Scatter<mc::CosineWeighted>(ray, hit.value(), distribution);
+                if(scatter.has_value())
+                    res += hit->m_material->m_emission + scatter->m_attenuation * RayColor(scene, scatter.value().m_ray, currentDepth - 1) *
+                        distribution.Value(scatter->m_ray.m_direction);
+                else
+                    res +=  hit->m_material->m_emission;
+            }
+            return res / static_cast<float>(m_bouncesPerHit);
         }
         else
         {

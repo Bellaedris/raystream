@@ -10,33 +10,16 @@
 
 namespace ray::core
 {
-    std::optional<RayAttenuation> Material::Scatter(const Ray& in, const RayHit& hit)
-    {
-        switch (m_type)
-        {
-            case MATERIAL_DIFFUSE:
-                return ScatterDiffuse(in, hit);
-            case MATERIAL_METAL:
-                return ScatterMetal(in, hit);
-            case MATERIAL_DIELECTRIC:
-                return ScatterDielectric(in, hit);
-            case MATERIAL_EMISSIVE:
-                return ScatterEmissive(in, hit);
-            default:
-                return {};
-        }
-    }
-
-    std::optional<RayAttenuation> Material::ScatterDiffuse(const Ray& in, const RayHit& hit)
-    {
-        // return a random direction in a hemisphere around normal.
-        // we could decide that our ray has a probability to scatter and attenuate based on this too,
-        // but this is simpler
-        glm::vec3 randDir = glm::sphericalRand(1.f);
-        if(glm::dot(randDir, hit.m_normal) < 0)
-            randDir = -randDir;
-        return RayAttenuation({hit.m_point, randDir}, m_albedo);
-    }
+    // std::optional<RayAttenuation> Material::ScatterDiffuse(const Ray& in, const RayHit& hit)
+    // {
+    //     // return a random direction in a hemisphere around normal.
+    //     // we could decide that our ray has a probability to scatter and attenuate based on this too,
+    //     // but this is simpler
+    //     glm::vec3 randDir = RNG::Vector3(-1.f, 1.f);
+    //     if(glm::dot(randDir, hit.m_normal) < 0)
+    //         randDir = -randDir;
+    //     return RayAttenuation({hit.m_point, randDir}, m_albedo);
+    // }
 
     std::optional<RayAttenuation> Material::ScatterMetal(const Ray& in, const RayHit& hit)
     {

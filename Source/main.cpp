@@ -14,7 +14,7 @@ int main()
 
     auto glass = std::make_shared<ray::core::Material>(ray::core::Material::CreateDielectric({1, 1, 1}, 1.5f));
 
-    auto lamp = std::make_shared<ray::core::Material>(ray::core::Material::CreateEmissive({1.f, 1.f, 1.f}));
+    auto lamp = std::make_shared<ray::core::Material>(ray::core::Material::CreateEmissive({10.f, 10.f, 10.f}));
 
     ray::core::Scene scene;
     scene.AddSphere({glm::vec3(5.f, -7.f, 6.f), 3.f, metal});
@@ -32,7 +32,7 @@ int main()
     scene.AddLight({{1.f, .84f, .67f}, {.0f, 9.f, .0f}});
     scene.AddLight({{.2f, .0f, .0f}, {8.f, .0, .0f}});
 
-    ray::core::Camera cam(800, 800, 2.f, {.0f, -2.f, -20.f}, 2.f, 50, 50);
+    ray::core::Camera cam(800, 800, 2.f, {.0f, -2.f, -20.f}, 2.f, 50, 50, 1);
     ray::core::Image result = cam.Render(scene);
     result.Write("render.png");
 

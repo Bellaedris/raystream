@@ -5,8 +5,12 @@
 #pragma once
 #include "ColorUtils.h"
 #include "Ray.h"
+#include "../MonteCarlo/PDF.h"
+
 
 #include <optional>
+
+#include "VectorUtils.h"
 
 namespace ray::core
 {
@@ -46,7 +50,18 @@ namespace ray::core
         #pragma endregion MaterialParameters
 
     private:
-        std::optional<RayAttenuation> ScatterDiffuse(const Ray& in, const RayHit& hit);
+        template<mc::PDF T>
+        std::optional<RayAttenuation> ScatterDiffuse(const Ray& in, const RayHit& hit, const T& distribution)
+        {
+            // return a random direction in a hemisphere around normal.
+            // we could decide that our ray has a probability to scatter and attenuate based on this too,
+            // but this is simpler
+            glm::vec3 randDir = distribution.Generate();
+            glm::mat3 basis = VectorUtils::FrisvadBasis(hit.m_normal);
+
+            return RayAttenuation({hit.m_point, basis * randDir}, m_albedo);
+        }
+
         std::optional<RayAttenuation> ScatterMetal(const Ray& in, const RayHit& hit);
         std::optional<RayAttenuation> ScatterDielectric(const Ray& in, const RayHit& hit);
         std::optional<RayAttenuation> ScatterEmissive(const Ray& in, const RayHit& hit);
@@ -59,7 +74,23 @@ namespace ray::core
          */
         [[nodiscard]] float SchlickFresnel(float cosTheta);
     public:
-        std::optional<RayAttenuation> Scatter(const Ray& in, const RayHit& hit);
+        template<mc::PDF T>
+        std::optional<RayAttenuation> Scatter(const Ray& in, const RayHit& hit, const T& distribution)
+        {
+            switch (m_type)
+            {
+                case MATERIAL_DIFFUSE:
+                    return ScatterDiffuse(in, hit, distribution);
+                case MATERIAL_METAL:
+                    return ScatterMetal(in, hit);
+                case MATERIAL_DIELECTRIC:
+                    return ScatterDielectric(in, hit);
+                case MATERIAL_EMISSIVE:
+                    return ScatterEmissive(in, hit);
+                default:
+                    return {};
+            }
+        }
 
         #pragma region ConstructionStatics
         static Material CreateDiffuse(const Color& albedo);

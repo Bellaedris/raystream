@@ -24,6 +24,7 @@ namespace ray::core
 
         int m_raysMaxDepth{1};
         int m_spp{1};
+        int m_bouncesPerHit{1};
 
         /**
          * \brief Just a hack to try and avoid inheritance pointer table by using templates
@@ -46,8 +47,11 @@ namespace ray::core
          * \param viewportHeight width of the viewport in world size
          * \param position position of the camera in world space
          * \param focalLength distance of the focal plane in the positive z axis
+         * \param raysMaxDepth maximal number of bounces recursion
+         * \param spp number of primary rays sent by pixel
+         * \param bounces number of secondary rays generated per bounce
          */
-        Camera(int width, int height, float viewportHeight, glm::vec3 position, float focalLength, int raysMaxDepth, int spp);
+        Camera(int width, int height, float viewportHeight, glm::vec3 position, float focalLength, int raysMaxDepth, int spp, int bounces);
 
         /**
          * \brief Iterates over all pixels in the scene and sends rays to color the image
