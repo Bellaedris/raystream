@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+
 namespace ray::mc
 {
     template<typename T>

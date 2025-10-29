@@ -57,9 +57,8 @@ namespace ray::core
             // we could decide that our ray has a probability to scatter and attenuate based on this too,
             // but this is simpler
             glm::vec3 randDir = distribution.Generate();
-            glm::mat3 basis = VectorUtils::FrisvadBasis(hit.m_normal);
 
-            return RayAttenuation({hit.m_point, basis * randDir}, m_albedo);
+            return RayAttenuation({hit.m_point, randDir}, m_albedo);
         }
 
         std::optional<RayAttenuation> ScatterMetal(const Ray& in, const RayHit& hit);

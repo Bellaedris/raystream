@@ -4,27 +4,31 @@
 
 #pragma once
 #include <random>
-#include <numbers>
 
 #include "PDF.h"
+#include "../Core/VectorUtils.h"
 
 namespace ray::mc
 {
-    class CosineWeighted
+    class Uniform
     {
     private:
         glm::vec3 m_normal;
+        /**
+         * With uniform distribution, the PDF depends on nothing. We can precompute it.
+         */
+        float m_pdf;
     public:
-        CosineWeighted(const glm::vec3& normal) : m_normal(normal) {}
+        Uniform(const glm::vec3& normal) : m_normal(normal), m_pdf(1.f / (M_PIf * 2.f)) {}
 
         float Value(const glm::vec3& dir) const
         {
-            return std::max(glm::dot(m_normal, dir), 0.f) / M_PIf;
+            return m_pdf;
         }
 
         /**
-         * Computes a random, cosine-biased direction around the unit sphere, then transform it to world space
-         * @return A random cosine-biased direction in the hemisphere centered at m_normal
+         * Computes A random direction around the unit sphere, then transform it to world space
+         * @return A random direction in the hemisphere centered at m_normal
          */
         glm::vec3 Generate() const
         {
@@ -36,9 +40,9 @@ namespace ray::mc
             float v = distribution(generator);
 
             float phi = 2.f * M_PIf * u;
-            float theta = std::sqrt(1 - v);
+            float theta = std::sqrt(1 - v * v);
 
-            glm::vec3 dir = {theta * std::cos(phi), std::sqrt(v), theta * std::sin(phi)};
+            glm::vec3 dir = {theta * std::cos(phi), v, theta * std::sin(phi)};
 
             return core::VectorUtils::FrisvadBasis(m_normal) * dir;
         }
