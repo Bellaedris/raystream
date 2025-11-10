@@ -115,6 +115,6 @@ namespace ray::core
         float r0 = (1.f - m_refractiveIndex) / (1.f + m_refractiveIndex);
         r0 = r0 * r0;
 
-        return r0 + (1.f - r0) * (1.f - cosTheta);
+        return r0 + (1.f - r0) * std::pow((1.f - cosTheta), 5.f);
     }
 }
