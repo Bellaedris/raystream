@@ -16,11 +16,9 @@ namespace ray::test::core
     {
     protected:
         shape::Sphere m_testSphere;
-        ray::core::Material m_sphereMat;
 
         TestSphere()
-                : m_testSphere({.0f, .0f, .0f}, 1.f, m_sphereMat)
-                , m_sphereMat({1.f, .0f, .0f})
+                : m_testSphere({.0f, .0f, .0f}, 1.f, nullptr)
         {
         }
 

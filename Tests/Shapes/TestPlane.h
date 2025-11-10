@@ -16,11 +16,9 @@ namespace ray::test::core
     {
     protected:
         shape::Plane m_testPlane;
-        ray::core::Material m_planeMat;
 
         TestPlane()
-                : m_testPlane({.0f, .0f, .0f}, {.0f, .0f, 1.f}, m_planeMat)
-                  , m_planeMat({1.f, .0f, .0f})
+                : m_testPlane({.0f, .0f, .0f}, {.0f, .0f, 1.f}, nullptr)
         {
         }
 
