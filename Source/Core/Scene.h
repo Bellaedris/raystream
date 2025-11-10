@@ -7,6 +7,7 @@
 #include <vector>
 #include "../Shapes/Sphere.h"
 #include "../Shapes/Plane.h"
+#include "../Shapes/Triangle.h"
 #include "Hittable.h"
 #include "PointLight.h"
 
@@ -17,6 +18,7 @@ namespace ray::core
     private:
         std::vector<shape::Sphere> m_spheres;
         std::vector<shape::Plane> m_planes;
+        std::vector<shape::Triangle> m_triangles;
         std::vector<PointLight> m_lights;
 
     public:
@@ -31,6 +33,7 @@ namespace ray::core
 
         inline void AddSphere(const shape::Sphere& sphere) { m_spheres.push_back(sphere); };
         inline void AddPlane(const shape::Plane& plane) { m_planes.push_back(plane); };
+        inline void AddTriangle(const shape::Triangle& triangle) { m_triangles.push_back(triangle); };
         inline void AddLight(const PointLight& light) { m_lights.push_back(light); };
 
         [[nodiscard]] inline const std::vector<PointLight>& GetLights() const { return m_lights; };

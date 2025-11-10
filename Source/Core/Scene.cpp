@@ -30,6 +30,16 @@ namespace ray::core
             }
         }
 
+        for (const shape::Triangle &triangle: m_triangles)
+        {
+            std::optional<RayHit> currentHit = triangle.Intersect(ray, tMin, closest);
+            if (currentHit.has_value())
+            {
+                closest = currentHit->m_distance;
+                hit = currentHit;
+            }
+        }
+
         return hit;
     }
 }

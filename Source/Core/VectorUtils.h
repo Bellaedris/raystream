@@ -7,9 +7,14 @@
 
 namespace ray::core
 {
+    /**
+     * \brief Various useful 3D geometry helpers and constants
+     */
     class VectorUtils
     {
     public:
+        static constexpr float M_EPSILON = .00001f;
+
         /**
          * Builds a new orthonormal basis using Frisvad's method https://backend.orbit.dtu.dk/ws/portalfiles/portal/126824972/onb_frisvad_jgt2012_v2.pdf
          * @param normal new up vector of the basis

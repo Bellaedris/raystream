@@ -11,6 +11,13 @@ Install all required packages via `apt` or any package manager:
  `libglm-dev`, `libgtest-dev`
 # Results this far
 
+## Stream 4
+I broke my own rules and haven't started a stream for this step. Still, there is now a PDF concept
+to create classes that can evaluate a PDF. This allows us to select a sampling strategy for our rendering. Cosine-weighed
+is our go-to option for the moment.
+Also i added Triangle intersection to get rid of this awful sphere lamp.
+![stream4.png](Media/stream4.png)
+
 ## Stream 3
 Refactored the material system, added scattering of rays logic, emissive and metallic/glass materials
 ![stream3.png](Media/stream3.png)
