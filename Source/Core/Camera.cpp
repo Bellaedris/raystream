@@ -39,8 +39,7 @@ namespace ray::core
                 mc::CosineWeighted distribution(hit->m_normal);
                 std::optional<RayAttenuation> scatter = hit->m_material->Scatter<mc::CosineWeighted>(ray, hit.value(), distribution);
                 if(scatter.has_value())
-                    res += hit->m_material->m_emission + scatter->m_attenuation * RayColor(scene, scatter.value().m_ray, currentDepth - 1) *
-                        distribution.Value(scatter->m_ray.m_direction);
+                    res += hit->m_material->m_emission + scatter->m_attenuation * RayColor(scene, scatter.value().m_ray, currentDepth - 1);
                 else
                     res +=  hit->m_material->m_emission;
             }
@@ -65,7 +64,7 @@ namespace ray::core
         {
             ScopedTimer<std::chrono::milliseconds> timer("Tracing");
             int finished = 0;
-            #pragma omp parallel for
+            #pragma omp parallel for collapse(2)
             for (int y = 0; y < m_height; y++)
             {
                 std::cout << "Lines finished: " << finished << " / " << m_height << "\n";
@@ -87,6 +86,7 @@ namespace ray::core
                     res = ColorUtils::ColorToGamma(res / static_cast<float>(m_spp), 2.2f),
                             result.SetPixel(x, y, ColorUtils::ColorToRGB(res));
                 }
+                #pragma omp atomic
                 finished++;
             }
         }

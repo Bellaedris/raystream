@@ -58,7 +58,7 @@ namespace ray::core
             // but this is simpler
             glm::vec3 randDir = distribution.Generate();
 
-            return RayAttenuation({hit.m_point, randDir}, m_albedo);
+            return RayAttenuation({hit.m_point, randDir}, m_albedo * distribution.Value(randDir));
         }
 
         std::optional<RayAttenuation> ScatterMetal(const Ray& in, const RayHit& hit);
