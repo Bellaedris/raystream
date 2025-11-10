@@ -5,6 +5,7 @@
 #pragma once
 #include <random>
 #include <numbers>
+#include <glm/gtc/constants.hpp>
 
 #include "PDF.h"
 
@@ -19,7 +20,7 @@ namespace ray::mc
 
         float Value(const glm::vec3& dir) const
         {
-            return std::max(glm::dot(m_normal, dir), 0.f) / M_PIf;
+            return std::max(glm::dot(m_normal, dir), 0.f) * glm::one_over_pi<float>();
         }
 
         /**
@@ -35,7 +36,7 @@ namespace ray::mc
             float u = distribution(generator);
             float v = distribution(generator);
 
-            float phi = 2.f * M_PIf * u;
+            float phi = 2.f * glm::pi<float>() * u;
             float theta = std::sqrt(1 - v);
 
             glm::vec3 dir = {theta * std::cos(phi), std::sqrt(v), theta * std::sin(phi)};

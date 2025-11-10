@@ -4,6 +4,7 @@
 
 #pragma once
 #include <random>
+#include <glm/gtc/constants.hpp>
 
 #include "PDF.h"
 #include "../Core/VectorUtils.h"
@@ -19,7 +20,7 @@ namespace ray::mc
          */
         float m_pdf;
     public:
-        Uniform(const glm::vec3& normal) : m_normal(normal), m_pdf(1.f / (M_PIf * 2.f)) {}
+        Uniform(const glm::vec3& normal) : m_normal(normal), m_pdf(glm::one_over_two_pi<float>()) {}
 
         float Value(const glm::vec3& dir) const
         {
@@ -39,7 +40,7 @@ namespace ray::mc
             float u = distribution(generator);
             float v = distribution(generator);
 
-            float phi = 2.f * M_PIf * u;
+            float phi = 2.f * glm::pi<float>() * u;
             float theta = std::sqrt(1 - v * v);
 
             glm::vec3 dir = {theta * std::cos(phi), v, theta * std::sin(phi)};
