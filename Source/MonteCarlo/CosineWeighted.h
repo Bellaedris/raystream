@@ -30,9 +30,8 @@ namespace ray::mc
         glm::vec3 Generate() const
         {
             // TODO refactor to use pseudo random instead, for faster generation
-            static std::random_device rd;
-            static std::mt19937 generator(rd());
-            static std::uniform_real_distribution<float> distribution(.0f, 1.f);
+            thread_local std::mt19937 generator(std::random_device{}());
+            thread_local std::uniform_real_distribution<float> distribution(.0f, 1.f);
 
             float u = distribution(generator);
             float v = distribution(generator);

@@ -40,7 +40,7 @@ namespace ray::core
     private:
         static std::mt19937& GetEngine()
         {
-            static std::mt19937 engine(std::random_device{}());
+            thread_local std::mt19937 engine(std::random_device{}());
             return engine;
         }
     };
