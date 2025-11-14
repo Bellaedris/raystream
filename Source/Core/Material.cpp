@@ -21,7 +21,7 @@ namespace ray::core
     //     return RayAttenuation({hit.m_point, randDir}, m_albedo);
     // }
 
-    std::optional<RayAttenuation> Material::ScatterMetal(const Ray& in, const RayHit& hit)
+    std::optional<RayAttenuation> Material::ScatterMetal(const Ray& in, const RayHit& hit) const
     {
         // reflect + fuzz.
         glm::vec3 newDir = glm::reflect(in.m_direction, hit.m_normal);
@@ -33,14 +33,17 @@ namespace ray::core
             return RayAttenuation({hit.m_point, fuzzedReflect}, m_albedo);
     }
 
-    std::optional<RayAttenuation> Material::ScatterDielectric(const Ray& in, const RayHit& hit)
+    std::optional<RayAttenuation> Material::ScatterDielectric(const Ray& in, const RayHit& hit) const
     {
         // diffract with all the complicated things and all
 
         // schlick fresnel
         float cosTheta = glm::dot(-in.m_direction, hit.m_normal);
         float sinTheta = std::sqrt(1.f - cosTheta * cosTheta);
-        float reflectance = SchlickFresnel(std::max(.0f, cosTheta));
+
+        float r0 = (1.f - m_refractiveIndex) / (1.f + m_refractiveIndex);
+        r0 = r0 * r0;
+        float reflectance = Microfacet::SchlickFresnel(std::max(.0f, cosTheta), glm::vec3(r0)).x;
 
         float refractionCoefficient = hit.m_IsFrontFace ? (1.f / m_refractiveIndex) : m_refractiveIndex;
 
@@ -61,7 +64,7 @@ namespace ray::core
         }
     }
 
-    std::optional<RayAttenuation> Material::ScatterEmissive(const Ray& in, const RayHit& hit)
+    std::optional<RayAttenuation> Material::ScatterEmissive(const Ray& in, const RayHit& hit) const
     {
         // should terminate the ray
         return {};
@@ -72,6 +75,18 @@ namespace ray::core
         Material diffuse
         {
             .m_albedo = {albedo},
+            .m_type = MATERIAL_DIFFUSE
+        };
+        return diffuse;
+    }
+
+    Material Material::CreatePBRDiffuse(const Color &albedo, float roughness, float metalness)
+    {
+        Material diffuse
+        {
+            .m_albedo = {albedo},
+            .m_roughness = roughness,
+            .m_metalness = metalness,
             .m_type = MATERIAL_DIFFUSE
         };
         return diffuse;
@@ -108,13 +123,5 @@ namespace ray::core
             .m_type = MATERIAL_DIELECTRIC
         };
         return dielectric;
-    }
-
-    float Material::SchlickFresnel(float cosTheta)
-    {
-        float r0 = (1.f - m_refractiveIndex) / (1.f + m_refractiveIndex);
-        r0 = r0 * r0;
-
-        return r0 + (1.f - r0) * std::pow((1.f - cosTheta), 5.f);
     }
 }

@@ -29,17 +29,17 @@ namespace ray::core
         if(currentDepth < 1)
             return {0, 0, 0};
 
-        std::optional<RayHit> hit = scene.Intersect(ray, 0.001f, std::numeric_limits<float>::max());
+        std::optional<RayHit> hit = scene.Intersect(ray, VectorUtils::M_EPSILON, std::numeric_limits<float>::max());
         if (hit.has_value())
         {
             // bounce rays through the scene
             Color res {0, 0, 0};
+            mc::CosineWeighted distribution(hit->m_normal);
             for (int i = 0; i < m_bouncesPerHit; ++i)
             {
-                mc::CosineWeighted distribution(hit->m_normal);
-                std::optional<RayAttenuation> scatter = hit->m_material->Scatter<mc::CosineWeighted>(ray, hit.value(), distribution);
+                std::optional<RayAttenuation> scatter = hit->m_material->Scatter<mc::CosineWeighted>(ray, hit.value(), distribution, glm::normalize(m_position - hit->m_point));
                 if(scatter.has_value())
-                    res += hit->m_material->m_emission + scatter->m_attenuation * RayColor(scene, scatter.value().m_ray, currentDepth - 1);
+                    res += hit->m_material->m_emission + scatter->m_attenuation * RayColor(scene, scatter->m_ray, currentDepth - 1);
                 else
                     res +=  hit->m_material->m_emission;
             }
@@ -64,7 +64,7 @@ namespace ray::core
         {
             ScopedTimer<std::chrono::milliseconds> timer("Tracing");
             int finished = 0;
-            #pragma omp parallel for collapse(2)
+            #pragma omp parallel for schedule(dynamic, 8)
             for (int y = 0; y < m_height; y++)
             {
                 std::cout << "Lines finished: " << finished << " / " << m_height << "\n";
@@ -83,8 +83,8 @@ namespace ray::core
                         res += RayColor(scene, r, m_raysMaxDepth);
                     }
 
-                    res = ColorUtils::ColorToGamma(res / static_cast<float>(m_spp), 2.2f),
-                            result.SetPixel(x, y, ColorUtils::ColorToRGB(res));
+                    res = ColorUtils::ColorToGamma(ColorUtils::TonemapReinhart(res / static_cast<float>(m_spp)), 2.2f);
+                    result.SetPixel(x, y, ColorUtils::ColorToRGB(res));
                 }
                 #pragma omp atomic
                 finished++;

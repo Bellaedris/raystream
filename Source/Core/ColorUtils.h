@@ -38,6 +38,11 @@ namespace ray::core
             return glm::pow(col, Color(1.f / gamma));
         }
 
+        static Color TonemapReinhart(const Color& col)
+        {
+            return col / (1.f + col);
+        }
+
         /**
          * Bell curve with peak at a certain wavelength and spread/standard deviation on the left/right
          * https://en.wikipedia.org/wiki/CIE_1931_color_space#Analytical_approximation
