@@ -23,9 +23,9 @@ namespace ray::test::mc
         glm::vec3 m_normal;
 
         TestDistributions()
-                : m_uniform({.0f, 1.f, .0f})
-                , m_cosineWeighted({.0f, 1.f, .0f})
-                , m_normal({.0f, 1.f, .0f})
+                : m_uniform({1.f, .0f, .0f})
+                , m_cosineWeighted({1.f, 0.f, .0f})
+                , m_normal({1.f, .0f, .0f})
         {
         }
 
