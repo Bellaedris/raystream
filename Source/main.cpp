@@ -8,7 +8,7 @@ int main()
     auto green = std::make_shared<ray::core::Material>(ray::core::Material::CreatePBRDiffuse(glm::vec3(.0, 1.f, .0f), 1.f, .0f));
     auto white = std::make_shared<ray::core::Material>(ray::core::Material::CreatePBRDiffuse(glm::vec3(1.f, 1.f, 1.f), 1.f, .0f));
     auto pink = std::make_shared<ray::core::Material>(ray::core::Material::CreatePBRDiffuse(glm::vec3(.961f, .663f, .722f), 1.f, .0f));
-    auto lightBlue = std::make_shared<ray::core::Material>(ray::core::Material::CreatePBRDiffuse(glm::vec3(.357f, .808f, .98f), .5f, .0f));
+    auto lightBlue = std::make_shared<ray::core::Material>(ray::core::Material::CreatePBRDiffuse(glm::vec3(.357f, .808f, .98f), .1f, .0f));
 
     auto metal = std::make_shared<ray::core::Material>(ray::core::Material::CreateMetallic(glm::vec3(1.f, 1.f, 1.f), .5f));
 
@@ -29,14 +29,14 @@ int main()
     scene.AddPlane({{.0f, -10.f, .0f}, {.0, 1.f, .0f}, white}); // floor
 
     // cornell box lights
-    scene.AddTriangle({{5.f, 9.9f, 5.f}, {5.f, 9.9f, -5.f}, {-5.f, 9.9f, 5.f}, lamp});
-    scene.AddTriangle({{5.f, 9.9f, -5.f}, {-5.f, 9.9f, -5.f}, {-5.f, 9.9f, 5.f}, lamp});
+    scene.AddTriangle({{5.f, 9.9f, 5.f}, {-5.f, 9.9f, 5.f}, {5.f, 9.9f, -5.f}, lamp});
+    scene.AddTriangle({{5.f, 9.9f, -5.f}, {-5.f, 9.9f, 5.f}, {-5.f, 9.9f, -5.f}, lamp});
 
     // lights
 //    scene.AddLight({{1.f, .84f, .67f}, {.0f, 9.f, .0f}});
 //    scene.AddLight({{.2f, .0f, .0f}, {8.f, .0, .0f}});
 
-    ray::core::Camera cam(800, 800, 2.f, {.0f, -2.f, -20.f}, 2.f, 50, 500, 1);
+    ray::core::Camera cam(800, 800, 2.f, {.0f, -2.f, -20.f}, 2.f, 50, 50, 1);
     ray::core::Image result = cam.Render(scene);
     result.Write("render.png");
 
