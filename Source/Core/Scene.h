@@ -19,23 +19,42 @@ namespace ray::core
         std::vector<shape::Sphere> m_spheres;
         std::vector<shape::Plane> m_planes;
         std::vector<shape::Triangle> m_triangles;
-        std::vector<PointLight> m_lights;
+        std::vector<shape::Triangle> m_lights;
 
     public:
         /**
-         * \brief Just a hack to try and avoid inheritance pointer table by using templates
-         * \tparam Primitive An type that defines an Intersect(const Ray& ray)
-         * \param ray A ray
+         * \brief Wrapper to a random point on one of the scene's light and the PDF associated with this point,
+         * which is 1.f / (numberOfLights * AreaOfTheChosenLight)
+         */
+        struct SampledLightInfo
+        {
+            glm::vec3 sampledPoint;
+            glm::vec3 sampledNormal;
+            float pdf;
+            std::shared_ptr<Material> mat;
+        };
+
+        /**
          * \param primitive A primitive to check intersection with
+         * \param tMin minimal intersection distance
+         * \param tMax maximal intersection distance
          * \return A struct filled with infos about the hit, or nothing
          */
         [[nodiscard]] std::optional<RayHit> Intersect(const Ray &ray, float tMin, float tMax) const;
 
         inline void AddSphere(const shape::Sphere& sphere) { m_spheres.push_back(sphere); };
         inline void AddPlane(const shape::Plane& plane) { m_planes.push_back(plane); };
-        inline void AddTriangle(const shape::Triangle& triangle) { m_triangles.push_back(triangle); };
-        inline void AddLight(const PointLight& light) { m_lights.push_back(light); };
 
-        [[nodiscard]] inline const std::vector<PointLight>& GetLights() const { return m_lights; };
+        /**
+         * \brief Adds a triangle to the scene. If the triangle is emissive, also add it to the list of lights.
+         * TODO eliminate duplication of triangle (have a vector of shared_ptr, for instance)
+         * \param triangle a triangle
+         */
+        void AddTriangle(const shape::Triangle& triangle);
+        inline void AddLight(const shape::Triangle& light) { m_lights.push_back(light); };
+
+        [[nodiscard]] SampledLightInfo GetSampleOnRandomLight() const;
+
+        [[nodiscard]] inline const std::vector<shape::Triangle>& GetLights() const { return m_lights; };
     };
 }
