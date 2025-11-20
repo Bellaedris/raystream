@@ -8,6 +8,9 @@
 #include "Timer.h"
 #include "../MonteCarlo/CosineWeighted.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/norm.hpp>
+
 namespace ray::core
 {
     Camera::Camera(int width, int height, float viewportHeight, glm::vec3 position, float focalLength, int raysMaxDepth, int spp, int bouncesPerHit)
@@ -32,18 +35,29 @@ namespace ray::core
         std::optional<RayHit> hit = scene.Intersect(ray, VectorUtils::M_EPSILON, std::numeric_limits<float>::max());
         if (hit.has_value())
         {
-            // bounce rays through the scene
             Color res {0, 0, 0};
-            mc::CosineWeighted distribution(hit->m_normal);
-            for (int i = 0; i < m_bouncesPerHit; ++i)
+            // Evaluate direct lighting
+            Scene::SampledLightInfo lightSample = scene.GetSampleOnRandomLight();
+            glm::vec3 pointToLight = lightSample.sampledPoint - hit->m_point;
+            Ray direct(hit->m_point, pointToLight);
+
+            auto directHit = scene.Intersect(direct, VectorUtils::M_EPSILON, glm::length(pointToLight) - VectorUtils::M_EPSILON);
+            if(directHit.has_value() == false)
             {
-                std::optional<RayAttenuation> scatter = hit->m_material->Scatter<mc::CosineWeighted>(ray, hit.value(), distribution, glm::normalize(m_position - hit->m_point));
-                if(scatter.has_value())
-                    res += hit->m_material->m_emission + scatter->m_attenuation * RayColor(scene, scatter->m_ray, currentDepth - 1);
-                else
-                    res +=  hit->m_material->m_emission;
+                res += lightSample.mat->m_emission * (hit->m_material->m_albedo / glm::pi<float>()) * std::fmax(.0f, glm::dot(hit->m_normal, glm::normalize(pointToLight))) * std::fmax(.0f, glm::dot(lightSample.sampledNormal, glm::normalize(-pointToLight))) / glm::length2(pointToLight) / lightSample.pdf;
             }
-            return res / static_cast<float>(m_bouncesPerHit);
+
+            // bounce rays through the scene
+//            mc::CosineWeighted distribution(hit->m_normal);
+//            for (int i = 0; i < m_bouncesPerHit; ++i)
+//            {
+//                std::optional<RayAttenuation> scatter = hit->m_material->Scatter<mc::CosineWeighted>(ray, hit.value(), distribution, glm::normalize(m_position - hit->m_point));
+//                if(scatter.has_value())
+//                    res += hit->m_material->m_emission + scatter->m_attenuation * RayColor(scene, scatter->m_ray, currentDepth - 1);
+//                else
+//                    res +=  hit->m_material->m_emission;
+//            }
+            return res;// / static_cast<float>(m_bouncesPerHit);
         }
         else
         {
