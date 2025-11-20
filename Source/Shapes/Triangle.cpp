@@ -18,7 +18,9 @@ ray::shape::Triangle::Triangle(
     , m_c(c)
     , m_material(mat)
 {
-    m_normal = glm::normalize(glm::cross(b - a, c - a));
+    glm::vec3 cross = glm::cross(b - a, c - a);
+    m_normal = glm::normalize(cross);
+    m_area = glm::length(cross) * .5f;
 }
 
 std::optional<core::RayHit> ray::shape::Triangle::Intersect(const ray::core::Ray &ray, float tMin, float tMax) const

@@ -20,6 +20,8 @@ private:
     glm::vec3 m_a, m_b, m_c;
     glm::vec3 m_normal;
     std::shared_ptr<core::Material> m_material;
+
+    float m_area;
 public:
     Triangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const std::shared_ptr<core::Material>& mat);
 
@@ -32,6 +34,11 @@ public:
      */
     std::optional<core::RayHit> Intersect(const core::Ray& ray, float tMin, float tMax) const;
 
+    inline glm::vec3 GetA() const { return m_a; };
+    inline glm::vec3 GetB() const { return m_b; };
+    inline glm::vec3 GetC() const { return m_c; };
+    inline glm::vec3 GetNormal() const { return m_normal; };
+    inline float GetArea() const { return m_area; };
     inline std::shared_ptr<core::Material> GetMaterial() const { return m_material; };
 };
 }
