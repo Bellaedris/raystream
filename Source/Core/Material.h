@@ -17,14 +17,15 @@
 namespace ray::core
 {
     /**
-     * \brief Small wrapper that contains a ray and an attenuation value
+     * \brief Small wrapper that contains a scattered ray, the surface BxDF and the associated PDF
      */
-    struct RayAttenuation
+    struct ScatterInfos
     {
         Ray m_ray;
-        Color m_attenuation;
+        Color m_brdf;
+        float m_pdf;
 
-        RayAttenuation(const Ray& ray, const Color& attenuation) : m_ray(ray), m_attenuation(attenuation) {}
+        ScatterInfos(const Ray& ray, const Color& attenuation, float pdf) : m_ray(ray), m_brdf(attenuation), m_pdf(pdf) {}
     };
 
     class Material
@@ -57,19 +58,20 @@ namespace ray::core
 
     private:
         template<mc::PDF T>
-        std::optional<RayAttenuation> ScatterDiffuse(const Ray& in, const RayHit& hit, const T& distribution) const
+        std::optional<ScatterInfos> ScatterDiffuse(const Ray& in, const RayHit& hit, const T& distribution) const
         {
             // return a random direction in a hemisphere around normal.
             // we could decide that our ray has a probability to scatter and attenuate based on this too,
             // but this is simpler
             glm::vec3 randDir = distribution.Generate();
 
-            auto color = (m_albedo * glm::one_over_pi<float>()) * glm::dot(randDir, hit.m_normal) / distribution.Value(randDir);
-            return RayAttenuation({hit.m_point, randDir}, color);
+            float pdf = distribution.Value(randDir);
+            glm::vec3 brdf = (m_albedo * glm::one_over_pi<float>()) * glm::dot(randDir, hit.m_normal);
+            return ScatterInfos({hit.m_point, randDir}, brdf, pdf);
         }
 
         template<mc::PDF T>
-        std::optional<RayAttenuation> ScatterCookTorranceDiffuse(const Ray& in, const RayHit& hit, const T& distribution, const glm::vec3& viewDir) const
+        std::optional<ScatterInfos> ScatterCookTorranceDiffuse(const Ray& in, const RayHit& hit, const T& distribution, const glm::vec3& viewDir) const
         {
             // compute the Cook Torrance reflectance, which has 3 parts:
             // diffuse = albedo / PI
@@ -103,28 +105,30 @@ namespace ray::core
 
             auto kD = glm::vec3(1.f) - F;
             // note that we don't have to multiply by F before specular, since F is already in the term
-            glm::vec3 color = (kD * diffuse + specular) * NdotL;
+            glm::vec3 brdf = (kD * diffuse + specular) * NdotL;
 
-            return RayAttenuation({hit.m_point, randDir}, color / distribution.Value(randDir));
+            return ScatterInfos({hit.m_point, randDir}, brdf, distribution.Value(randDir));
         }
 
-        std::optional<RayAttenuation> ScatterMetal(const Ray& in, const RayHit& hit) const;
-        std::optional<RayAttenuation> ScatterDielectric(const Ray& in, const RayHit& hit) const;
-        std::optional<RayAttenuation> ScatterEmissive(const Ray& in, const RayHit& hit) const;
+        std::optional<ScatterInfos> ScatterMetal(const Ray& in, const RayHit& hit) const;
+        std::optional<ScatterInfos> ScatterDielectric(const Ray& in, const RayHit& hit) const;
+        std::optional<ScatterInfos> ScatterEmissive(const Ray& in, const RayHit& hit) const;
     public:
         template<mc::PDF T>
-        std::optional<RayAttenuation> Scatter(const Ray& in, const RayHit& hit, const T& distribution, const glm::vec3& viewDir) const
+        std::optional<ScatterInfos> Scatter(const Ray& in, const RayHit& hit, const T& distribution, const glm::vec3& viewDir) const
         {
             switch (m_type)
             {
                 case MATERIAL_DIFFUSE:
-                    return ScatterCookTorranceDiffuse(in, hit, distribution, viewDir);
+                    return ScatterDiffuse(in, hit, distribution);
                 case MATERIAL_METAL:
                     return ScatterMetal(in, hit);
                 case MATERIAL_DIELECTRIC:
                     return ScatterDielectric(in, hit);
                 case MATERIAL_EMISSIVE:
                     return ScatterEmissive(in, hit);
+                case MATERIAL_PBR:
+                    return ScatterCookTorranceDiffuse(in, hit, distribution, viewDir);
                 default:
                     return {};
             }

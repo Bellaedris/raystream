@@ -21,7 +21,7 @@ namespace ray::core
     //     return RayAttenuation({hit.m_point, randDir}, m_albedo);
     // }
 
-    std::optional<RayAttenuation> Material::ScatterMetal(const Ray& in, const RayHit& hit) const
+    std::optional<ScatterInfos> Material::ScatterMetal(const Ray& in, const RayHit& hit) const
     {
         // reflect + fuzz.
         glm::vec3 newDir = glm::reflect(in.m_direction, hit.m_normal);
@@ -30,10 +30,10 @@ namespace ray::core
         if(glm::dot(fuzzedReflect, hit.m_normal) < 0)
             return {};
         else
-            return RayAttenuation({hit.m_point, fuzzedReflect}, m_albedo);
+            return ScatterInfos({hit.m_point, fuzzedReflect}, m_albedo, 1.f);
     }
 
-    std::optional<RayAttenuation> Material::ScatterDielectric(const Ray& in, const RayHit& hit) const
+    std::optional<ScatterInfos> Material::ScatterDielectric(const Ray& in, const RayHit& hit) const
     {
         // diffract with all the complicated things and all
 
@@ -52,7 +52,7 @@ namespace ray::core
         if(RNG::Float() < reflectance || refractionCoefficient * sinTheta > 1.f)
         {
             // reflect
-            return RayAttenuation({hit.m_point, glm::reflect(in.m_direction, hit.m_normal)}, m_albedo);
+            return ScatterInfos({hit.m_point, glm::reflect(in.m_direction, hit.m_normal)}, m_albedo, 1.f);
         }
         else
         {
@@ -60,11 +60,11 @@ namespace ray::core
             glm::vec3 rparallel = refractionCoefficient * (in.m_direction + cosTheta * hit.m_normal);
             float sin2theta2 = refractionCoefficient * refractionCoefficient * (1.f - cosTheta * cosTheta);
             glm::vec3 rortho = -std::sqrt(1.f - sin2theta2) * hit.m_normal;
-            return RayAttenuation({hit.m_point, rortho + rparallel}, m_albedo);
+            return ScatterInfos({hit.m_point, rortho + rparallel}, m_albedo, 1.f);
         }
     }
 
-    std::optional<RayAttenuation> Material::ScatterEmissive(const Ray& in, const RayHit& hit) const
+    std::optional<ScatterInfos> Material::ScatterEmissive(const Ray& in, const RayHit& hit) const
     {
         // should terminate the ray
         return {};
