@@ -20,7 +20,8 @@ namespace ray::mc
 
         float Value(const glm::vec3& dir) const
         {
-            return std::max(glm::dot(m_normal, dir), 0.f) * glm::one_over_pi<float>();
+            // clamp to an epsilon value to avoid returning 0 and creating a NaN propagation when dividing by our PDF.
+            return std::max(glm::dot(m_normal, dir), core::VectorUtils::M_EPSILON) * glm::one_over_pi<float>();
         }
 
         /**
