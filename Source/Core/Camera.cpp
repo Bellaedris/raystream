@@ -29,41 +29,128 @@ namespace ray::core
 
     Color Camera::RayColor(const Scene &scene, const Ray &ray, int currentDepth)
     {
-        if(currentDepth < 1)
-            return {0, 0, 0};
-
-        std::optional<RayHit> hit = scene.Intersect(ray, VectorUtils::M_EPSILON, std::numeric_limits<float>::max());
-        if (hit.has_value())
+        Ray ln = ray;
+        Color result(0, 0, 0);
+        glm::vec3 throughput(1.f);
+        for(int depth = 1; depth < currentDepth; depth++)
         {
-            Color res {0, 0, 0};
-            // Evaluate direct lighting
-            Scene::SampledLightInfo lightSample = scene.GetSampleOnRandomLight();
-            glm::vec3 pointToLight = lightSample.sampledPoint - hit->m_point;
-            Ray direct(hit->m_point, pointToLight);
-
-            auto directHit = scene.Intersect(direct, VectorUtils::M_EPSILON, glm::length(pointToLight) - VectorUtils::M_EPSILON);
-            if(directHit.has_value() == false)
+            std::optional<RayHit> hit = scene.Intersect(ln, VectorUtils::M_EPSILON, std::numeric_limits<float>::max());
+            if (hit.has_value())
             {
-                res += lightSample.mat->m_emission * (hit->m_material->m_albedo / glm::pi<float>()) * std::fmax(.0f, glm::dot(hit->m_normal, glm::normalize(pointToLight))) * std::fmax(.0f, glm::dot(lightSample.sampledNormal, glm::normalize(-pointToLight))) / glm::length2(pointToLight) / lightSample.pdf;
-            }
+                result += throughput * hit->m_material->m_emission;
 
-            // bounce rays through the scene
-//            mc::CosineWeighted distribution(hit->m_normal);
+                Color direct {0, 0, 0};
+                Color indirect {0, 0, 0};
+                float pdfSum = .0f;
+                // Evaluate direct lighting
+                for (int i = 0; i < m_bouncesPerHit; ++i)
+                {
+                    Scene::SampledLightInfo lightSample = scene.GetSampleOnRandomLight();
+                    glm::vec3 pointToLight = lightSample.sampledPoint - hit->m_point;
+                    Ray directRay(hit->m_point, pointToLight);
+                    auto directHit = scene.Intersect(
+                            directRay,
+                            VectorUtils::M_EPSILON,
+                            glm::length(pointToLight) - VectorUtils::M_EPSILON
+                    );
+                    if (directHit.has_value() == false)
+                    {
+                        float LdotD = std::fmax(.0f, glm::dot(lightSample.sampledNormal, glm::normalize(-pointToLight)));
+                        float d2 = glm::length2(pointToLight);
+                        float pdfLightToSolidAngle = lightSample.pdf * LdotD / d2;
+                        direct = throughput * (lightSample.mat->m_emission *
+                                  (hit->m_material->m_albedo /glm::pi<float>()) *
+                                  std::fmax(.0f, glm::dot(hit->m_normal, glm::normalize(pointToLight))) *
+                                  LdotD /
+                                  d2 /
+                                  lightSample.pdf);
+                        pdfSum += lightSample.pdf;
+                    }
+                }
+                direct /= static_cast<float>(m_bouncesPerHit);
+
+                // evaluate indirect lighting
+                mc::CosineWeighted distribution(hit->m_normal);
+                std::optional<ScatterInfos> scatter = hit->m_material->Scatter<mc::CosineWeighted>(ln, hit.value(), distribution, glm::normalize(m_position - hit->m_point));
+                if(scatter.has_value())
+                {
+                    //send secondary ray
+                    auto bounce = scene.Intersect(scatter->m_ray, VectorUtils::M_EPSILON, std::numeric_limits<float>::max());
+                    if(bounce.has_value() && bounce->m_material->m_type == Material::MATERIAL_EMISSIVE)
+                    {
+                        pdfSum += scatter->m_pdf;
+                        indirect = throughput * (bounce->m_material->m_emission * scatter->m_brdf / scatter->m_pdf);
+                    }
+                    throughput = throughput * scatter->m_brdf * glm::max(glm::dot(scatter->m_ray.m_direction, hit->m_normal), .0f) / scatter->m_pdf;
+                    ln = scatter->m_ray;
+                }
+                else
+                    break;
+
+                result += (direct + direct) / 2.f; // move this to the scattering function?
+
+                // russian roulette
+                // TODO eventually add a minimum depth to begin russian roulette
+                float q = std::clamp(std::max(std::max(throughput.x, throughput.y), throughput.z), .05f, 1.f);
+                if(RNG::Float() > q)
+                    break;
+                else
+                    throughput /= q;
+            }
+            else
+            {
+                result += throughput * ColorUtils::ColorLerp({0.5f, 0.7f, 1.0f}, {1, 1, 1}, ray.m_direction.y);
+                break;
+            }
+        }
+
+        return result;
+
+//        if(currentDepth < 1)
+//            return {0, 0, 0};
+//
+//        std::optional<RayHit> hit = scene.Intersect(ray, VectorUtils::M_EPSILON, std::numeric_limits<float>::max());
+//        if (hit.has_value())
+//        {
+//            Color direct {0, 0, 0};
+//            Color indirect {0, 0, 0};
+//            // Evaluate direct lighting
 //            for (int i = 0; i < m_bouncesPerHit; ++i)
 //            {
-//                std::optional<RayAttenuation> scatter = hit->m_material->Scatter<mc::CosineWeighted>(ray, hit.value(), distribution, glm::normalize(m_position - hit->m_point));
-//                if(scatter.has_value())
-//                    res += hit->m_material->m_emission + scatter->m_attenuation * RayColor(scene, scatter->m_ray, currentDepth - 1);
-//                else
-//                    res +=  hit->m_material->m_emission;
+//                Scene::SampledLightInfo lightSample = scene.GetSampleOnRandomLight();
+//                glm::vec3 pointToLight = lightSample.sampledPoint - hit->m_point;
+//                Ray directRay(hit->m_point, pointToLight);
+//
+//                auto directHit = scene.Intersect(
+//                        directRay,
+//                        VectorUtils::M_EPSILON,
+//                        glm::length(pointToLight) - VectorUtils::M_EPSILON
+//                );
+//                if (directHit.has_value() == false)
+//                {
+//                    direct += lightSample.mat->m_emission * (hit->m_material->m_albedo /
+//                              glm::pi<float>()) *
+//                              std::fmax(.0f, glm::dot(hit->m_normal, glm::normalize(pointToLight))) *
+//                              std::fmax(.0f, glm::dot(lightSample.sampledNormal, glm::normalize(-pointToLight))) /
+//                              glm::length2(pointToLight) /
+//                              lightSample.pdf;
+//                }
 //            }
-            return res;// / static_cast<float>(m_bouncesPerHit);
-        }
-        else
-        {
-            // TODO skybox, since this one is a straight up copypaste
-            return ColorUtils::ColorLerp({0.5f, 0.7f, 1.0f}, {1, 1, 1}, ray.m_direction.y) ;
-        }
+//            direct /= static_cast<float>(m_bouncesPerHit);
+//
+//            // bounce rays through the scene
+//            mc::CosineWeighted distribution(hit->m_normal);
+//            std::optional<RayAttenuation> scatter = hit->m_material->Scatter<mc::CosineWeighted>(ray, hit.value(), distribution, glm::normalize(m_position - hit->m_point));
+//            if(scatter.has_value())
+//                indirect += scatter->m_attenuation * RayColor(scene, scatter->m_ray, currentDepth - 1);
+//
+//            return hit->m_material->m_emission + (direct + indirect) / 2.f; // move this to the scattering function?
+//        }
+//        else
+//        {
+//            // TODO skybox, since this one is a straight up copypaste
+//            return ColorUtils::ColorLerp({0.5f, 0.7f, 1.0f}, {1, 1, 1}, ray.m_direction.y) ;
+//        }
     }
 
     Image Camera::Render(const Scene &scene)
